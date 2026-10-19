@@ -1,0 +1,312 @@
+/*
+ * Hackathon Countdown Hub — style.css
+ *
+ * SCOPE: Only styles that Tailwind CDN cannot express cleanly:
+ *   1. Modal open/close fade + scale transition
+ *   2. Event card hover lift effect + border glow
+ *   3. Countdown tile tick-pulse animation
+ *   4. Form input / select theming
+ *   5. Reduced-motion override
+ *   6. Minor cosmetic helpers (scrollbar, card entrance)
+ *
+ * Everything else (layout, spacing, colours, typography) lives in
+ * Tailwind utility classes inside index.html.
+ */
+
+
+/* ── 1. MODAL TRANSITIONS ─────────────────────────────────────
+   The native <dialog> element supports an [open] attribute.
+   We fade + scale the dialog in, and blur the ::backdrop.       */
+
+.modal-dialog {
+  max-width: min(calc(100vw - 2rem), 28rem);
+  max-height: calc(100vh - 2rem);
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  margin: auto;
+  /* starting state (before open) */
+  opacity: 0;
+  transform: scale(0.95) translateY(-12px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.modal-dialog[open] {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+/* Backdrop fade */
+.modal-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  /* Chrome requires the animation trick for backdrop transitions */
+  animation: backdropFadeIn 0.2s ease forwards;
+}
+
+@keyframes backdropFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+
+/* ── 2. EVENT CARD HOVER ──────────────────────────────────────
+   Cards lift upward and show an indigo glow on hover.          */
+
+.event-card {
+  /* Entrance animation on render */
+  animation: cardFadeUp 0.4s ease-out both;
+  transition:
+    transform  0.22s ease,
+    box-shadow 0.22s ease,
+    border-color 0.22s ease;
+}
+
+.event-card:hover {
+  transform: translateY(-6px);
+  box-shadow:
+    0 20px 48px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(99, 102, 241, 0.35);
+  border-color: rgba(99, 102, 241, 0.35) !important;
+}
+
+/* Grayed-out state when event has started */
+.event-card.card-expired {
+  opacity: 0.62;
+  filter: grayscale(80%);
+}
+
+.event-card.card-expired:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+@keyframes cardFadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+
+/* ── 3. COUNTDOWN TILE TICK-PULSE ────────────────────────────
+   A tiny scale+colour burst fires on the digit that just
+   changed, giving the clock a tactile "tick" feel.            */
+
+@keyframes tickPulse {
+  0%   { transform: scale(1);    color: inherit; }
+  40%  { transform: scale(1.14); color: #a5b4fc; }
+  100% { transform: scale(1);    color: inherit; }
+}
+
+.tile-value.ticked {
+  animation: tickPulse 0.2s ease-out;
+}
+
+
+/* ── 4. FORM INPUTS ───────────────────────────────────────────
+   Dark themed inputs with a subtle indigo focus ring.         */
+
+.modal-input {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 0.6rem 0.875rem;
+  font-size: 0.9rem;
+  font-family: 'Inter', sans-serif;
+  color: #f1f5f9;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.modal-input::placeholder {
+  color: #4b5563;
+}
+
+.modal-input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.22);
+}
+
+/* datetime-local calendar icon: tint to indigo */
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.45) sepia(1) saturate(3) hue-rotate(210deg);
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+/* Select arrow colouring */
+.modal-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%236b7280' d='M8 10.5L3 5.5h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  padding-right: 2.25rem;
+  cursor: pointer;
+}
+
+.modal-select option {
+  background: #1f2937;
+  color: #f1f5f9;
+}
+
+
+/* ── 5. CUSTOM SCROLLBAR ─────────────────────────────────────*/
+
+::-webkit-scrollbar        { width: 5px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: rgba(99, 102, 241, 0.35); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.55); }
+
+
+/* ── 6. REDUCED-MOTION OVERRIDE ──────────────────────────────
+   Respect the OS accessibility setting by disabling all
+   animations and transitions for users who prefer it.        */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration:       0.01ms !important;
+    animation-iteration-count: 1     !important;
+    transition-duration:      0.01ms !important;
+  }
+  /* Ensure cards are visible even without the fade-up */
+  .event-card { opacity: 1 !important; transform: none !important; }
+}
+
+
+/* ── 7. URGENCY BADGE PULSE ANIMATION ─────────────────────────
+   Subtle scale and ambient red glow pulse for events under 24h. */
+
+@keyframes badgeUrgentPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 0 8px 2px rgba(239, 68, 68, 0.35);
+  }
+}
+
+.badge-urgent-pulse {
+  animation: badgeUrgentPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+
+/* ── 8. LIGHT THEME OVERRIDES ──────────────────────────────────
+   Active when html has the 'light' class (toggled via button).  */
+
+html.light body {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+html.light header {
+  background: linear-gradient(to right, #4338ca, #6366f1, #4338ca);
+  border-bottom-color: rgba(99, 102, 241, 0.2);
+}
+
+html.light #wall-clock {
+  color: #64748b;
+}
+
+html.light .event-card {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+}
+
+html.light .event-card:hover {
+  box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.12), 0 8px 10px -6px rgba(99, 102, 241, 0.08);
+  border-color: rgba(99, 102, 241, 0.4) !important;
+}
+
+html.light .event-card.card-expired {
+  opacity: 0.65;
+  filter: grayscale(85%);
+}
+
+html.light .event-card.card-expired:hover {
+  border-color: #e2e8f0 !important;
+}
+
+html.light .event-card h2 {
+  color: #0f172a;
+}
+
+html.light .tile-box {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+}
+
+html.light .tile-value {
+  color: #1e293b;
+}
+
+html.light .event-started-box {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+}
+
+html.light .event-started-box span {
+  color: #334155;
+}
+
+html.light .modal-dialog {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+  color: #0f172a;
+}
+
+html.light .modal-dialog h2 {
+  color: #0f172a;
+}
+
+html.light .modal-dialog p {
+  color: #64748b;
+}
+
+html.light .modal-input {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+html.light .modal-input::placeholder {
+  color: #94a3b8;
+}
+
+html.light .modal-input:focus {
+  background: #ffffff;
+  border-color: #6366f1;
+}
+
+html.light .modal-select option {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+html.light #btn-cancel-modal {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  color: #475569;
+}
+
+html.light #btn-cancel-modal:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+html.light footer p {
+  color: #64748b;
+}
+
+html.light .empty-state-title {
+  color: #1e293b !important;
+}
+
+html.light .empty-state-text {
+  color: #64748b !important;
+}
+
