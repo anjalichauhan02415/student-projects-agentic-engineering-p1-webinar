@@ -62,7 +62,7 @@ Validation: empty title and past dates are blocked
 Empty state shown after deleting all events
 node --check app.js passes
 Zero red errors in the DevTools console
-# Bug found and fixed during testing
+### Bug found and fixed during testing
 An automated sanity script reported "all checks passed", but the app was blank. The browser console showed Uncaught SyntaxError: Identifier 'card' has already been declared in app.js, which stopped the whole script from running. A duplicate variable was renamed. Lesson: string-matching tests do not prove an app works, so always verify in a real browser.
 ## Author
 Love Panchal (@lovepanchalhere). B.Tech CSE (AI & ML), MMDU.
