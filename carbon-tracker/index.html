@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EcoTrack — Student Carbon Footprint Calculator</title>
+  <meta name="description" content="Calculate and monitor your daily university carbon footprint with EcoTrack. Track commute, electricity, and diet emissions." />
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            neon: {
+              400: '#22c55e',
+              500: '#10b981',
+              accent: '#00ff87',
+              glow: 'rgba(0, 255, 135, 0.35)',
+            },
+            dark: {
+              950: '#070b09',
+              900: '#0c1410',
+              850: '#111c16',
+              800: '#17261e',
+              700: '#23382c',
+            }
+          },
+          boxShadow: {
+            'neon-sm': '0 0 15px rgba(0, 255, 135, 0.2)',
+            'neon-md': '0 0 25px rgba(0, 255, 135, 0.35)',
+            'neon-lg': '0 0 45px rgba(0, 255, 135, 0.45)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="bg-dark-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-neon-accent selection:text-dark-950 relative overflow-x-hidden">
+  
+  <!-- Ambient background glowing orbs -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+    <div class="ambient-glow ambient-glow-1"></div>
+    <div class="ambient-glow ambient-glow-2"></div>
+    <div class="ambient-glow ambient-glow-3"></div>
+    <div class="grid-overlay"></div>
+  </div>
+
+  <!-- Header / Navigation Bar -->
+  <header class="w-full border-b border-white/5 backdrop-blur-md bg-dark-950/60 sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-neon-500 to-neon-accent flex items-center justify-center text-dark-950 shadow-neon-sm font-bold">
+          <i data-lucide="leaf" class="w-5 h-5 stroke-[2.5]"></i>
+        </div>
+        <div>
+          <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-neon-accent bg-clip-text text-transparent">
+            Eco<span class="text-neon-accent">Track</span>
+          </span>
+          <span class="hidden sm:inline-block ml-2 text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            Campus Edition
+          </span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4 text-xs font-medium text-slate-400">
+        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-neon-accent"></i>
+          <span>Student Baseline: <strong class="text-slate-200">12.5 kg/day</strong></span>
+        </div>
+        <button id="reset-history-btn" title="Reset saved calculation" class="hidden sm:flex items-center gap-1.5 text-slate-400 hover:text-red-400 transition-colors py-1.5 px-2.5 rounded-lg hover:bg-white/5">
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+          <span>Reset</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 flex-grow w-full">
+    <!-- Hero Title -->
+    <div class="text-center max-w-2xl mx-auto mb-10">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-neon-accent text-xs font-semibold mb-4 animate-pulse">
+        <i data-lucide="activity" class="w-3.5 h-3.5"></i>
+        <span>Personal Carbon Footprint Tracker</span>
+      </div>
+      <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-3">
+        Measure Your <span class="bg-gradient-to-r from-neon-accent via-emerald-400 to-teal-300 bg-clip-text text-transparent">Campus Impact</span>
+      </h1>
+      <p class="text-slate-400 text-sm sm:text-base leading-relaxed">
+        Understand your daily carbon emissions from commuting, dorm energy, and meals. Discover smart habits to lower your environmental footprint.
+      </p>
+    </div>
+
+    <!-- Dashboard Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- Calculator Form (Glassmorphic Dashboard Card) -->
+      <section class="lg:col-span-7 glass-card rounded-3xl p-6 sm:p-8 relative overflow-hidden" aria-labelledby="calc-heading">
+        <div class="card-glow-accent"></div>
+        
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
+          <div class="flex items-center gap-3">
+            <div class="p-2 rounded-xl bg-neon-500/10 text-neon-accent border border-neon-500/20">
+              <i data-lucide="sliders" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h2 id="calc-heading" class="text-lg font-bold text-white tracking-tight">Daily Activity Parameters</h2>
+              <p class="text-xs text-slate-400">Input your typical 24-hour campus routine</p>
+            </div>
+          </div>
+          <span class="text-xs font-mono text-neon-accent/80 bg-neon-accent/10 px-2.5 py-1 rounded-md border border-neon-accent/20 flex items-center gap-1">
+            <i data-lucide="shield-check" class="w-3 h-3"></i>
+            <span>Local Sync</span>
+          </span>
+        </div>
+
+        <form id="footprint-form" class="space-y-6" novalidate>
+          
+          <!-- Commute Field -->
+          <div class="space-y-2 group">
+            <div class="flex items-center justify-between">
+              <label for="commute-input" class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                <i data-lucide="bike" class="w-4 h-4 text-neon-accent group-hover:scale-110 transition-transform"></i>
+                <span>Daily Commute (km)</span>
+              </label>
+              <span class="text-xs text-slate-400 font-mono" id="commute-badge">0.0 km</span>
+            </div>
+            <div class="relative">
+              <input
+                type="number"
+                id="commute-input"
+                name="commute"
+                min="0"
+                max="300"
+                step="0.5"
+                placeholder="e.g. 8.5"
+                class="custom-input w-full px-4 py-3.5 rounded-xl bg-dark-900/80 border border-white/10 focus:border-neon-accent focus:ring-1 focus:ring-neon-accent text-white placeholder-slate-500 text-sm transition-all outline-none font-medium pr-16"
+                required
+              />
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-mono text-slate-500 uppercase tracking-wider font-semibold pointer-events-none">
+                KM / DAY
+              </span>
+            </div>
+            <div class="flex items-center justify-between text-[11px] text-slate-400 px-1">
+              <span>Walking / Metro / Bus / Car</span>
+              <span class="text-emerald-400/80 font-mono">Factor: ~0.18 kg CO₂/km</span>
+            </div>
+          </div>
+
+          <!-- Electricity Field -->
+          <div class="space-y-2 group">
+            <div class="flex items-center justify-between">
+              <label for="electricity-input" class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                <i data-lucide="zap" class="w-4 h-4 text-neon-accent group-hover:scale-110 transition-transform"></i>
+                <span>Electricity Use (kWh)</span>
+              </label>
+              <span class="text-xs text-slate-400 font-mono" id="electricity-badge">0.0 kWh</span>
+            </div>
+            <div class="relative">
+              <input
+                type="number"
+                id="electricity-input"
+                name="electricity"
+                min="0"
+                max="100"
+                step="0.1"
+                placeholder="e.g. 4.2"
+                class="custom-input w-full px-4 py-3.5 rounded-xl bg-dark-900/80 border border-white/10 focus:border-neon-accent focus:ring-1 focus:ring-neon-accent text-white placeholder-slate-500 text-sm transition-all outline-none font-medium pr-16"
+                required
+              />
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-mono text-slate-500 uppercase tracking-wider font-semibold pointer-events-none">
+                KWH / DAY
+              </span>
+            </div>
+            <div class="flex items-center justify-between text-[11px] text-slate-400 px-1">
+              <span>Laptop, Dorm Mini-fridge, AC & Lighting</span>
+              <span class="text-emerald-400/80 font-mono">Factor: ~0.42 kg CO₂/kWh</span>
+            </div>
+          </div>
+
+          <!-- Diet Dropdown Field -->
+          <div class="space-y-2 group">
+            <label for="diet-select" class="text-sm font-semibold text-slate-200 flex items-center justify-between">
+              <span class="flex items-center gap-2">
+                <i data-lucide="utensils" class="w-4 h-4 text-neon-accent group-hover:scale-110 transition-transform"></i>
+                <span>Diet Type</span>
+              </span>
+              <span class="text-xs text-slate-400 font-mono" id="diet-badge">Vegan</span>
+            </label>
+            <div class="relative">
+              <select
+                id="diet-select"
+                name="diet"
+                class="custom-input w-full px-4 py-3.5 rounded-xl bg-dark-900/90 border border-white/10 focus:border-neon-accent focus:ring-1 focus:ring-neon-accent text-white text-sm transition-all outline-none font-medium appearance-none cursor-pointer pr-10"
+              >
+                <option value="vegan" class="bg-dark-900 text-slate-200">Vegan (~2.5 kg CO₂/day)</option>
+                <option value="vegetarian" class="bg-dark-900 text-slate-200" selected>Vegetarian (~3.8 kg CO₂/day)</option>
+                <option value="meat-heavy" class="bg-dark-900 text-slate-200">Meat-heavy (~7.2 kg CO₂/day)</option>
+              </select>
+              <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+              </div>
+            </div>
+            <p class="text-[11px] text-slate-400 px-1">
+              Food production, transport, and dining hall meal footprint.
+            </p>
+          </div>
+
+          <!-- Quick Presets -->
+          <div class="pt-2">
+            <span class="text-xs font-semibold text-slate-400 mb-2 block">Quick Student Profiles:</span>
+            <div class="grid grid-cols-3 gap-2">
+              <button type="button" data-preset="dorm" class="preset-btn text-xs py-2 px-3 rounded-lg bg-white/5 hover:bg-neon-accent/10 hover:text-neon-accent border border-white/5 hover:border-neon-accent/30 text-slate-300 font-medium transition-all text-center">
+                🏫 Dorm Walker
+              </button>
+              <button type="button" data-preset="commuter" class="preset-btn text-xs py-2 px-3 rounded-lg bg-white/5 hover:bg-neon-accent/10 hover:text-neon-accent border border-white/5 hover:border-neon-accent/30 text-slate-300 font-medium transition-all text-center">
+                🚌 Bus Commuter
+              </button>
+              <button type="button" data-preset="driver" class="preset-btn text-xs py-2 px-3 rounded-lg bg-white/5 hover:bg-neon-accent/10 hover:text-neon-accent border border-white/5 hover:border-neon-accent/30 text-slate-300 font-medium transition-all text-center">
+                🚗 Car Commuter
+              </button>
+            </div>
+          </div>
+
+          <!-- Error message container -->
+          <div id="error-message" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
+            <i data-lucide="alert-triangle" class="w-4 h-4 shrink-0"></i>
+            <span id="error-text">Please enter valid non-negative numbers for commute and electricity.</span>
+          </div>
+
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            id="calculate-btn"
+            class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-neon-500 to-neon-accent text-dark-950 font-extrabold text-sm tracking-wide uppercase shadow-neon-md hover:shadow-neon-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 cursor-pointer relative overflow-hidden group"
+          >
+            <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 pointer-events-none"></div>
+            <i data-lucide="calculator" class="w-5 h-5 stroke-[2.5] group-hover:rotate-12 transition-transform"></i>
+            <span>Calculate Footprint</span>
+          </button>
+        </form>
+
+        <div class="mt-4 pt-4 border-t border-white/5 flex items-center justify-between text-[11px] text-slate-500 font-mono">
+          <span id="last-saved-time">No prior calculation saved</span>
+          <span class="flex items-center gap-1 text-neon-accent/80">
+            <i data-lucide="database" class="w-3 h-3"></i>
+            <span>Persistent Cache</span>
+          </span>
+        </div>
+      </section>
+
+      <!-- Results & Motivational Insights Container -->
+      <section class="lg:col-span-5 flex flex-col gap-6" aria-labelledby="results-heading">
+        
+        <!-- Main Metric Result Card -->
+        <div class="glass-card rounded-3xl p-6 sm:p-8 relative overflow-hidden text-center border-neon-500/30">
+          <div class="card-glow-accent opacity-50"></div>
+          
+          <div class="flex items-center justify-between mb-4">
+            <h2 id="results-heading" class="text-xs uppercase tracking-widest font-bold text-slate-400 flex items-center gap-1.5">
+              <i data-lucide="bar-chart-2" class="w-4 h-4 text-neon-accent"></i>
+              <span>Carbon Output</span>
+            </h2>
+            <div id="status-badge" class="px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase bg-emerald-500/10 text-neon-accent border border-emerald-500/30 flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-neon-accent animate-ping"></span>
+              <span>Ready</span>
+            </div>
+          </div>
+
+          <!-- Total Display with animated counter -->
+          <div class="py-6 flex flex-col items-center justify-center">
+            <div class="flex items-baseline justify-center gap-2">
+              <span id="co2-value" class="text-6xl sm:text-7xl font-extrabold font-mono tracking-tight text-white drop-shadow-[0_0_20px_rgba(0,255,135,0.4)]">
+                0.0
+              </span>
+              <span class="text-xl sm:text-2xl font-bold text-neon-accent">kg CO₂</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-2 font-medium">Estimated Daily Emissions</p>
+            
+            <div class="mt-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] text-slate-300">
+              <span class="text-slate-400">Annual Pace:</span>
+              <span id="annual-pace" class="font-mono font-bold text-neon-accent">0 kg / yr</span>
+            </div>
+          </div>
+
+          <!-- Proportional Breakdown Bar -->
+          <div class="w-full mt-2 pt-4 border-t border-white/5 text-left">
+            <div class="flex justify-between items-center text-xs text-slate-400 mb-2">
+              <span class="font-semibold text-slate-300">Emissions Breakdown</span>
+              <span id="breakdown-total" class="font-mono text-[11px]">100%</span>
+            </div>
+            <div class="h-2.5 w-full bg-dark-900 rounded-full overflow-hidden flex p-0.5 border border-white/5">
+              <div id="bar-commute" class="h-full bg-cyan-400 rounded-l-full transition-all duration-700" style="width: 33%" title="Commute"></div>
+              <div id="bar-electricity" class="h-full bg-amber-400 transition-all duration-700" style="width: 33%" title="Electricity"></div>
+              <div id="bar-diet" class="h-full bg-neon-accent rounded-r-full transition-all duration-700" style="width: 34%" title="Diet"></div>
+            </div>
+            <div class="flex justify-between text-[10px] text-slate-400 font-mono mt-2">
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-cyan-400 inline-block"></span> Commute: <b id="pct-commute" class="text-slate-200">0%</b></span>
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span> Power: <b id="pct-electricity" class="text-slate-200">0%</b></span>
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-neon-accent inline-block"></span> Diet: <b id="pct-diet" class="text-slate-200">0%</b></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Motivational Feedback Container -->
+        <div id="feedback-container" class="glass-card rounded-3xl p-6 sm:p-7 relative overflow-hidden transition-all duration-500 border border-white/10">
+          <div id="feedback-glow" class="absolute -right-12 -top-12 w-32 h-32 bg-neon-accent/10 rounded-full blur-2xl pointer-events-none"></div>
+
+          <div class="flex items-start gap-4">
+            <div id="feedback-icon-box" class="w-12 h-12 rounded-2xl bg-neon-accent/10 border border-neon-accent/30 text-neon-accent flex items-center justify-center shrink-0 shadow-neon-sm">
+              <i id="feedback-icon" data-lucide="award" class="w-6 h-6 stroke-[2.2]"></i>
+            </div>
+            <div class="flex-grow">
+              <div class="flex items-center justify-between mb-1">
+                <span id="feedback-tier" class="text-xs uppercase tracking-wider font-extrabold text-neon-accent">
+                  Ready To Calculate
+                </span>
+                <span id="feedback-comparison" class="text-[11px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-300">
+                  vs Campus Avg
+                </span>
+              </div>
+              <h3 id="feedback-headline" class="text-base font-bold text-white mb-2">
+                Awaiting your input
+              </h3>
+              <p id="feedback-text" class="text-xs text-slate-300 leading-relaxed">
+                Fill in your daily travel distance, dorm or apartment electric consumption, and typical diet to compute your carbon footprint and unlock customized campus sustainability tips.
+              </p>
+            </div>
+          </div>
+
+          <!-- Dynamic Campus Action Tips -->
+          <div id="action-tips" class="mt-5 pt-4 border-t border-white/5 space-y-2.5">
+            <h4 class="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+              <i data-lucide="lightbulb" class="w-3.5 h-3.5 text-neon-accent"></i>
+              <span>High-Impact Campus Tip:</span>
+            </h4>
+            <div id="tip-card" class="p-3 rounded-xl bg-white/[0.03] border border-white/5 text-xs text-slate-300 flex items-start gap-2.5">
+              <i data-lucide="check-circle-2" class="w-4 h-4 text-neon-accent shrink-0 mt-0.5"></i>
+              <span id="tip-content">Switching one daily vehicle commute to a bicycle or campus shuttle reduces yearly emissions by up to 450 kg CO₂.</span>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </div>
+
+    <!-- Benchmark Reference Section for University Context -->
+    <section class="mt-12 glass-card rounded-3xl p-6 sm:p-8" aria-label="Campus Footprint Guide">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <i data-lucide="info" class="w-4 h-4 text-neon-accent"></i>
+            <span>University Student Carbon Rating Scale</span>
+          </h3>
+          <p class="text-xs text-slate-400">Benchmarked against university environmental metrics</p>
+        </div>
+        <div class="flex items-center gap-2 text-xs font-mono text-slate-400">
+          <span>Global Target:</span>
+          <span class="px-2 py-1 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-bold">&lt; 5.5 kg/day</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="p-4 rounded-2xl bg-white/[0.02] border border-emerald-500/20 hover:border-emerald-500/40 transition-all">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Eco Hero</span>
+            <span class="text-xs font-mono text-slate-300 font-bold">&lt; 6.0 kg</span>
+          </div>
+          <p class="text-xs text-slate-400">Minimal transit, plant-focused diet, energy conscious dorm living.</p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-white/[0.02] border border-teal-500/20 hover:border-teal-500/40 transition-all">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-teal-300 uppercase tracking-wider">Sustainable Scholar</span>
+            <span class="text-xs font-mono text-slate-300 font-bold">6.0 – 11.0 kg</span>
+          </div>
+          <p class="text-xs text-slate-400">Bicycle or public transit, balanced vegetarian diet, light electrical appliances.</p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-white/[0.02] border border-amber-500/20 hover:border-amber-500/40 transition-all">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Campus Average</span>
+            <span class="text-xs font-mono text-slate-300 font-bold">11.1 – 17.0 kg</span>
+          </div>
+          <p class="text-xs text-slate-400">Typical student with mixed car/bus rides, laptop + gaming setup, omnivore meals.</p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-white/[0.02] border border-rose-500/20 hover:border-rose-500/40 transition-all">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-rose-400 uppercase tracking-wider">High Emitter</span>
+            <span class="text-xs font-mono text-slate-300 font-bold">&gt; 17.0 kg</span>
+          </div>
+          <p class="text-xs text-slate-400">Solo car commute, continuous high-wattage AC/heating, daily heavy meat consumption.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full border-t border-white/5 py-6 px-4 sm:px-6 text-center text-xs text-slate-500 backdrop-blur-sm">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-neon-accent inline-block"></span>
+        <span class="font-semibold text-slate-400">EcoTrack</span>
+        <span>• Autonomous Carbon Insights for Students</span>
+      </div>
+      <div class="flex items-center gap-4 text-[11px]">
+        <span>Factors: IPCC & EPA 2024</span>
+        <span>•</span>
+        <span>Zero-Build Vanilla Architecture</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- App Script -->
+  <script src="app.js"></script>
+</body>
+</html>
