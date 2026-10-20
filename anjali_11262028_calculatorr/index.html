@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A safe, keyboard-friendly calculator with history and themes, built with HTML, CSS and vanilla JavaScript.">
+  <title>MyCalculator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <section class="calculator" aria-label="Calculator">
+      <header class="topbar">
+        <h1>MyCalculator</h1>
+        <button id="themeToggle" class="icon-btn" type="button" aria-label="Switch to light theme">&#9728;</button>
+      </header>
+
+      <div class="display">
+        <div id="previous" class="previous" aria-hidden="true"></div>
+        <output id="current" class="current" aria-live="polite" aria-atomic="true">0</output>
+      </div>
+
+      <div id="keypad" class="keypad">
+        <button class="btn fn" type="button" data-action="clear" data-key="Escape" aria-label="All clear">AC</button>
+        <button class="btn fn" type="button" data-action="delete" data-key="Backspace" aria-label="Delete last character">DEL</button>
+        <button class="btn op" type="button" data-action="operator" data-value="/" data-key="/" aria-label="Divide">&divide;</button>
+        <button class="btn op" type="button" data-action="operator" data-value="*" data-key="*" aria-label="Multiply">&times;</button>
+
+        <button class="btn" type="button" data-action="digit" data-value="7" data-key="7">7</button>
+        <button class="btn" type="button" data-action="digit" data-value="8" data-key="8">8</button>
+        <button class="btn" type="button" data-action="digit" data-value="9" data-key="9">9</button>
+        <button class="btn op" type="button" data-action="operator" data-value="-" data-key="-" aria-label="Subtract">&minus;</button>
+
+        <button class="btn" type="button" data-action="digit" data-value="4" data-key="4">4</button>
+        <button class="btn" type="button" data-action="digit" data-value="5" data-key="5">5</button>
+        <button class="btn" type="button" data-action="digit" data-value="6" data-key="6">6</button>
+        <button class="btn op" type="button" data-action="operator" data-value="+" data-key="+" aria-label="Add">+</button>
+
+        <button class="btn" type="button" data-action="digit" data-value="1" data-key="1">1</button>
+        <button class="btn" type="button" data-action="digit" data-value="2" data-key="2">2</button>
+        <button class="btn" type="button" data-action="digit" data-value="3" data-key="3">3</button>
+        <button class="btn equals" type="button" data-action="equals" data-key="Enter" aria-label="Equals">=</button>
+
+        <button class="btn zero" type="button" data-action="digit" data-value="0" data-key="0">0</button>
+        <button class="btn" type="button" data-action="decimal" data-key="." aria-label="Decimal point">.</button>
+      </div>
+
+      <p class="hint">Keyboard: 0-9 . + - * / &middot; Enter = equals &middot; Backspace = delete &middot; Esc = clear</p>
+    </section>
+
+    <aside class="history" aria-label="Calculation history">
+      <div class="history-head">
+        <h2>History</h2>
+        <button id="clearHistory" class="text-btn" type="button">Clear history</button>
+      </div>
+      <ul id="historyList" class="history-list"></ul>
+      <p id="historyEmpty" class="empty">No calculations yet. Press = to save a result here.</p>
+    </aside>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
