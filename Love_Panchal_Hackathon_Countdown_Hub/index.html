@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Hackathon Countdown Hub — live countdown timers for upcoming college hackathons, workshops, and competitions." />
+  <title>Hackathon Countdown Hub 🚀</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body class="min-h-screen bg-gray-950 text-gray-100 font-sans antialiased">
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║                  HEADER                     ║
+       ╚══════════════════════════════════════════════╝ -->
+  <header class="sticky top-0 z-40 border-b border-white/5 bg-gradient-to-r from-indigo-950 via-violet-950 to-indigo-950 shadow-xl">
+    <div class="mx-auto max-w-7xl px-4 sm:px-8 py-4 flex items-center justify-between gap-4 flex-wrap">
+
+      <!-- Branding -->
+      <div class="flex items-center gap-3">
+        <span class="text-3xl select-none" style="filter:drop-shadow(0 0 10px #818cf8)" aria-hidden="true">🚀</span>
+        <div>
+          <h1 class="text-xl sm:text-2xl font-black tracking-tight text-white leading-tight">
+            Hackathon Countdown Hub
+          </h1>
+          <p class="text-xs text-indigo-300 font-medium">Live countdowns for every college event</p>
+        </div>
+      </div>
+
+      <!-- Right: live indicator + Theme Toggle + Add button -->
+      <div class="flex items-center gap-2.5 sm:gap-4 flex-wrap">
+        <div class="flex items-center gap-2">
+          <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" aria-hidden="true"></span>
+          <span id="live-label" class="text-sm font-semibold text-gray-400 tabular-nums"></span>
+        </div>
+        <button
+          id="btn-theme-toggle"
+          type="button"
+          aria-label="Switch to light mode"
+          title="Switch theme"
+          class="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+        >
+          <span id="theme-toggle-icon" class="text-base sm:text-lg select-none" aria-hidden="true">☀️</span>
+        </button>
+        <button
+          id="btn-open-modal"
+          aria-haspopup="dialog"
+          class="flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 px-3.5 sm:px-4 py-2 sm:py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-900/50 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-950"
+        >
+          <span aria-hidden="true" class="text-base leading-none">＋</span>
+          Add Event
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║              MAIN CONTENT                   ║
+       ╚══════════════════════════════════════════════╝ -->
+  <main class="mx-auto max-w-7xl px-4 sm:px-8 py-10">
+
+    <!-- Wall clock -->
+    <p class="mb-6 text-right font-mono text-xs text-gray-700" id="wall-clock" aria-label="Current time"></p>
+
+    <!-- Events grid — cards injected here by app.js -->
+    <section
+      id="events-grid"
+      aria-label="Upcoming events"
+      class="grid gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
+    ></section>
+
+  </main>
+
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║                  FOOTER                     ║
+       ╚══════════════════════════════════════════════╝ -->
+  <footer class="pb-10 text-center">
+    <p class="text-xs text-gray-800 font-medium">
+      Hackathon Countdown Hub &mdash; data stored locally in your browser
+    </p>
+  </footer>
+
+
+  <!-- ╔══════════════════════════════════════════════╗
+       ║            ADD EVENT MODAL                  ║
+       ╚══════════════════════════════════════════════╝ -->
+  <dialog
+    id="add-event-modal"
+    aria-labelledby="modal-heading"
+    aria-describedby="modal-sub"
+    class="modal-dialog rounded-2xl border border-white/10 bg-gray-900 p-0 text-gray-100 shadow-2xl w-full max-h-[90vh] overflow-y-auto backdrop:bg-black/70 backdrop:backdrop-blur-sm"
+  >
+
+    <!-- Modal header -->
+    <div class="flex items-start justify-between gap-4 border-b border-white/8 px-5 sm:px-6 pt-5 sm:pt-6 pb-4 sm:pb-5">
+      <div>
+        <h2 id="modal-heading" class="text-xl font-black text-white">Add New Event</h2>
+        <p id="modal-sub" class="mt-0.5 text-sm text-gray-400">Fill in the details to start a live countdown.</p>
+      </div>
+      <button
+        id="btn-close-modal"
+        aria-label="Close add event modal"
+        class="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-white/10 text-gray-500 hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-400 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+      >✕</button>
+    </div>
+
+    <!-- Modal form -->
+    <form id="add-event-form" novalidate class="space-y-4 px-5 sm:px-6 py-5">
+
+      <!-- Event Title -->
+      <div>
+        <label for="field-title" class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-400">
+          Event Title <span class="text-rose-400" aria-hidden="true">*</span>
+        </label>
+        <input
+          type="text"
+          id="field-title"
+          name="title"
+          placeholder="e.g. HackMIT 2026"
+          required
+          maxlength="80"
+          autocomplete="off"
+          class="modal-input w-full"
+        />
+      </div>
+
+      <!-- Date & Time -->
+      <div>
+        <label for="field-date" class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-400">
+          Date &amp; Time <span class="text-rose-400" aria-hidden="true">*</span>
+        </label>
+        <input
+          type="datetime-local"
+          id="field-date"
+          name="date"
+          required
+          class="modal-input w-full"
+        />
+        <p class="mt-1 text-xs text-gray-600">Must be set to a future date and time.</p>
+      </div>
+
+      <!-- Location -->
+      <div>
+        <label for="field-location" class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-400">
+          Location
+        </label>
+        <input
+          type="text"
+          id="field-location"
+          name="location"
+          placeholder="e.g. MIT Media Lab, Cambridge MA"
+          maxlength="100"
+          autocomplete="off"
+          class="modal-input w-full"
+        />
+      </div>
+
+      <!-- Category -->
+      <div>
+        <label for="field-category" class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-400">
+          Category
+        </label>
+        <select id="field-category" name="category" class="modal-input modal-select w-full">
+          <option value="hackathon">🛠️  Hackathon</option>
+          <option value="workshop">📚  Workshop</option>
+          <option value="meetup">🤝  Meetup</option>
+          <option value="competition">🏆  Competition</option>
+          <option value="other">📌  Other</option>
+        </select>
+      </div>
+
+      <!-- Inline error -->
+      <p
+        id="form-error"
+        role="alert"
+        aria-live="assertive"
+        class="hidden rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm font-medium text-rose-400"
+      ></p>
+
+      <!-- Actions -->
+      <div class="flex justify-end gap-3 pt-1">
+        <button
+          type="button"
+          id="btn-cancel-modal"
+          class="rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold text-gray-400 hover:bg-white/10 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500"
+        >Cancel</button>
+        <button
+          type="submit"
+          id="btn-submit-event"
+          class="rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-900/50 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+        >Add Event 🚀</button>
+      </div>
+
+    </form>
+  </dialog><!-- /modal -->
+
+
+  <script src="app.js"></script>
+</body>
+</html>
