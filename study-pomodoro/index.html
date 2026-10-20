@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyPomodoro • Focus Clock & Session Tracker</title>
+  <meta name="description" content="A distraction-free, aesthetic Pomodoro study clock and session tracker tailored for university students.">
+  <meta name="theme-color" content="#090d16">
+
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            },
+            surface: {
+              DEFAULT: '#090d16',
+              card: 'rgba(17, 24, 39, 0.75)',
+              border: 'rgba(255, 255, 255, 0.08)',
+              hover: 'rgba(255, 255, 255, 0.05)',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons via CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-[#090d16] text-slate-100 font-sans min-h-screen antialiased flex flex-col selection:bg-indigo-500 selection:text-white relative overflow-x-hidden">
+
+  <!-- Ambient Background Mesh Gradients -->
+  <div class="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+    <div id="ambient-glow-1" class="absolute -top-[20%] left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full bg-gradient-to-tr from-indigo-600/20 via-purple-600/15 to-pink-500/10 blur-[130px] transition-all duration-1000"></div>
+    <div id="ambient-glow-2" class="absolute -bottom-[20%] right-[10%] w-[550px] h-[550px] rounded-full bg-gradient-to-br from-blue-600/15 via-emerald-600/10 to-transparent blur-[140px] transition-all duration-1000"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.15),rgba(255,255,255,0))]"></div>
+  </div>
+
+  <!-- Navigation / Header -->
+  <header class="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-6 pb-4 flex items-center justify-between">
+    <!-- Brand -->
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-[1px] shadow-lg shadow-indigo-500/20">
+        <div class="w-full h-full bg-[#090d16] rounded-xl flex items-center justify-center">
+          <i data-lucide="sparkles" class="w-5 h-5 text-indigo-400"></i>
+        </div>
+      </div>
+      <div>
+        <h1 class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
+          StudyPomodoro
+        </h1>
+        <p class="text-xs text-slate-400 font-medium">University Focus & Session Tracker</p>
+      </div>
+    </div>
+
+    <!-- Actions & Status Badges -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      <!-- Session Streak Badge -->
+      <div class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-950/40 border border-indigo-500/20 text-indigo-300 text-xs font-semibold backdrop-blur-md">
+        <i data-lucide="flame" class="w-3.5 h-3.5 text-amber-400 fill-amber-400"></i>
+        <span id="header-streak-badge">0 Day Streak</span>
+      </div>
+
+      <!-- Sound Mute Toggle -->
+      <button id="btn-toggle-sound" aria-label="Toggle Sound Alerts" title="Toggle audio chime"
+        class="w-10 h-10 rounded-xl bg-slate-900/80 border border-slate-700/60 hover:border-slate-500 text-slate-300 hover:text-white flex items-center justify-center transition-all duration-200 backdrop-blur-md hover:bg-slate-800/90 active:scale-95 shadow-sm">
+        <span id="sound-icon-container" class="flex items-center justify-center"><i data-lucide="volume-2" class="w-4 h-4"></i></span>
+      </button>
+
+      <!-- Settings Button -->
+      <button id="btn-open-settings" aria-label="Open Settings" title="Study preferences & timers"
+        class="w-10 h-10 rounded-xl bg-slate-900/80 border border-slate-700/60 hover:border-slate-500 text-slate-300 hover:text-white flex items-center justify-center transition-all duration-200 backdrop-blur-md hover:bg-slate-800/90 active:scale-95 shadow-sm">
+        <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 py-4 flex flex-col items-center gap-6">
+
+    <!-- Active Task Anchor Bar -->
+    <section class="w-full max-w-xl glass-card rounded-2xl p-4 sm:p-5 border border-white/10 shadow-xl shadow-black/40 relative overflow-hidden group">
+      <div class="flex items-center justify-between mb-2">
+        <span class="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-indigo-400">
+          <i data-lucide="target" class="w-3.5 h-3.5"></i>
+          Current Objective
+        </span>
+        <span id="task-save-indicator" class="text-xs text-slate-400 opacity-0 transition-opacity duration-300">Saved</span>
+      </div>
+      <div class="relative flex items-center">
+        <input 
+          type="text" 
+          id="current-task-input" 
+          placeholder="What are you studying right now? (e.g. CS201 Problem Set, Organic Chem Ch. 4)"
+          class="w-full bg-slate-950/60 border border-slate-800 hover:border-slate-700 focus:border-indigo-500 text-slate-100 placeholder-slate-500 text-sm sm:text-base rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all font-medium pr-10"
+        />
+        <button id="btn-clear-task" title="Clear objective" class="absolute right-3 text-slate-500 hover:text-slate-300 hidden">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Quick University Study Tags -->
+      <div class="flex items-center gap-1.5 sm:gap-2 mt-3 overflow-x-auto pb-1 no-scrollbar text-xs">
+        <span class="text-slate-400 text-[11px] shrink-0 font-medium">Quick Tags:</span>
+        <button type="button" class="quick-tag-btn px-2.5 py-1 rounded-lg bg-slate-800/70 hover:bg-indigo-600/30 border border-slate-700/60 hover:border-indigo-500/40 text-slate-300 transition-colors" data-tag="Problem Set">Problem Set</button>
+        <button type="button" class="quick-tag-btn px-2.5 py-1 rounded-lg bg-slate-800/70 hover:bg-indigo-600/30 border border-slate-700/60 hover:border-indigo-500/40 text-slate-300 transition-colors" data-tag="Exam Revision">Exam Revision</button>
+        <button type="button" class="quick-tag-btn px-2.5 py-1 rounded-lg bg-slate-800/70 hover:bg-indigo-600/30 border border-slate-700/60 hover:border-indigo-500/40 text-slate-300 transition-colors" data-tag="Lecture Notes">Lecture Notes</button>
+        <button type="button" class="quick-tag-btn px-2.5 py-1 rounded-lg bg-slate-800/70 hover:bg-indigo-600/30 border border-slate-700/60 hover:border-indigo-500/40 text-slate-300 transition-colors" data-tag="Paper & Research">Paper & Research</button>
+      </div>
+    </section>
+
+    <!-- Main Clock Stage Card -->
+    <section class="w-full max-w-xl glass-card rounded-3xl p-6 sm:p-8 border border-white/10 shadow-2xl shadow-indigo-950/40 flex flex-col items-center relative backdrop-blur-xl">
+
+      <!-- Mode Selector Tabs -->
+      <div class="flex items-center gap-1.5 p-1.5 bg-slate-950/70 rounded-2xl border border-white/5 mb-6 w-full max-w-sm justify-between shadow-inner">
+        <button id="tab-focus" data-mode="focus" class="mode-tab-btn flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow-md shadow-indigo-600/30">
+          <i data-lucide="brain" class="w-3.5 h-3.5"></i>
+          Focus
+        </button>
+        <button id="tab-short-break" data-mode="short-break" class="mode-tab-btn flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-medium transition-all duration-300 flex items-center justify-center gap-1.5 text-slate-400 hover:text-slate-200">
+          <i data-lucide="coffee" class="w-3.5 h-3.5"></i>
+          Short Break
+        </button>
+        <button id="tab-long-break" data-mode="long-break" class="mode-tab-btn flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-medium transition-all duration-300 flex items-center justify-center gap-1.5 text-slate-400 hover:text-slate-200">
+          <i data-lucide="armchair" class="w-3.5 h-3.5"></i>
+          Long Break
+        </button>
+      </div>
+
+      <!-- SVG Circular Timer Progress Ring -->
+      <div class="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center my-2 select-none">
+        <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 280 280">
+          <!-- Background Track Circle -->
+          <circle 
+            cx="140" 
+            cy="140" 
+            r="124" 
+            class="stroke-slate-800/60" 
+            stroke-width="9" 
+            fill="transparent" 
+          />
+          <!-- Animated Progress Circle -->
+          <circle 
+            id="timer-progress-ring"
+            cx="140" 
+            cy="140" 
+            r="124" 
+            stroke="url(#timer-gradient-focus)" 
+            stroke-width="10" 
+            stroke-linecap="round"
+            fill="transparent" 
+            stroke-dasharray="779.11"
+            stroke-dashoffset="0"
+            class="transition-all duration-500 ease-out"
+          />
+          <defs>
+            <!-- Focus Gradient -->
+            <linearGradient id="timer-gradient-focus" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#818cf8" />
+              <stop offset="50%" stop-color="#6366f1" />
+              <stop offset="100%" stop-color="#a855f7" />
+            </linearGradient>
+            <!-- Short Break Gradient -->
+            <linearGradient id="timer-gradient-short" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#34d399" />
+              <stop offset="100%" stop-color="#059669" />
+            </linearGradient>
+            <!-- Long Break Gradient -->
+            <linearGradient id="timer-gradient-long" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#38bdf8" />
+              <stop offset="100%" stop-color="#0284c7" />
+            </linearGradient>
+          </defs>
+        </svg>
+
+        <!-- Centered Timer Content -->
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+          <!-- Status Pill -->
+          <span id="timer-status-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase mb-2 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
+            <span id="timer-mode-name">Deep Work</span>
+          </span>
+
+          <!-- Digital Countdown Display -->
+          <div id="timer-display" class="font-mono text-6xl sm:text-7xl font-bold tracking-tight text-white drop-shadow-md">
+            25:00
+          </div>
+
+          <!-- Session Cycle Dot Indicators (e.g. 1/4 of pomodoro set) -->
+          <div class="flex items-center gap-2 mt-4" id="cycle-dots-container" title="Sessions until next long break">
+            <div class="w-2.5 h-2.5 rounded-full bg-slate-700 transition-all duration-300 cycle-dot" data-index="1"></div>
+            <div class="w-2.5 h-2.5 rounded-full bg-slate-700 transition-all duration-300 cycle-dot" data-index="2"></div>
+            <div class="w-2.5 h-2.5 rounded-full bg-slate-700 transition-all duration-300 cycle-dot" data-index="3"></div>
+            <div class="w-2.5 h-2.5 rounded-full bg-slate-700 transition-all duration-300 cycle-dot" data-index="4"></div>
+          </div>
+          <p id="cycle-label" class="text-[11px] text-slate-400 mt-1 font-medium">Session 1 of 4</p>
+        </div>
+      </div>
+
+      <!-- Main Action Controls -->
+      <div class="flex items-center gap-4 sm:gap-6 mt-6">
+        <!-- Reset Button -->
+        <button id="btn-reset" aria-label="Reset timer" title="Reset current session (R / Esc)"
+          class="w-12 h-12 rounded-2xl bg-slate-900/90 border border-slate-700/60 hover:border-slate-500 text-slate-400 hover:text-white flex items-center justify-center transition-all duration-200 active:scale-95 shadow-md hover:bg-slate-800">
+          <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+        </button>
+
+        <!-- Primary Start / Pause Button -->
+        <button id="btn-toggle-timer" aria-label="Start timer"
+          class="px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold text-lg sm:text-xl flex items-center justify-center gap-3 transition-all duration-200 active:scale-95 shadow-lg shadow-indigo-600/30 hover:shadow-indigo-500/50 min-w-[170px]">
+          <span id="play-pause-icon-container" class="flex items-center justify-center"><i data-lucide="play" class="w-6 h-6 fill-white"></i></span>
+          <span id="play-pause-text">Start Focus</span>
+        </button>
+
+        <!-- Skip Button -->
+        <button id="btn-skip" aria-label="Skip session" title="Skip to next session (S)"
+          class="w-12 h-12 rounded-2xl bg-slate-900/90 border border-slate-700/60 hover:border-slate-500 text-slate-400 hover:text-white flex items-center justify-center transition-all duration-200 active:scale-95 shadow-md hover:bg-slate-800">
+          <i data-lucide="skip-forward" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Quick Preset Buttons (Standard vs College Deep Work) -->
+      <div class="flex items-center gap-2 mt-7 pt-5 border-t border-white/5 w-full justify-center text-xs">
+        <span class="text-slate-400 font-medium">Presets:</span>
+        <button id="preset-standard" class="px-3 py-1 rounded-lg bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 text-slate-300 hover:text-white transition-colors">
+          Standard (25/5)
+        </button>
+        <button id="preset-deepwork" class="px-3 py-1 rounded-lg bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 text-slate-300 hover:text-white transition-colors">
+          University Deep (50/10)
+        </button>
+      </div>
+    </section>
+
+    <!-- University Study Session Tracker & Daily Metrics -->
+    <section class="w-full max-w-xl grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+      <!-- Total Completed Sessions -->
+      <div class="glass-card rounded-2xl p-4 border border-white/10 flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider">All-Time</span>
+          <i data-lucide="check-circle-2" class="w-4 h-4 text-indigo-400"></i>
+        </div>
+        <div>
+          <div id="stat-total-sessions" class="text-2xl sm:text-3xl font-extrabold text-white font-mono">0</div>
+          <span class="text-[11px] text-slate-400">Total sessions</span>
+        </div>
+      </div>
+
+      <!-- Today's Sessions -->
+      <div class="glass-card rounded-2xl p-4 border border-white/10 flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider">Today</span>
+          <i data-lucide="calendar" class="w-4 h-4 text-emerald-400"></i>
+        </div>
+        <div>
+          <div class="flex items-baseline gap-1">
+            <span id="stat-today-sessions" class="text-2xl sm:text-3xl font-extrabold text-white font-mono">0</span>
+            <span id="stat-today-goal-target" class="text-xs text-slate-400 font-mono">/ 8</span>
+          </div>
+          <!-- Goal progress bar -->
+          <div class="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
+            <div id="goal-progress-bar" class="bg-gradient-to-r from-emerald-500 to-indigo-500 h-full w-0 transition-all duration-500"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today's Total Focus Time -->
+      <div class="glass-card rounded-2xl p-4 border border-white/10 flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider">Focus Time</span>
+          <i data-lucide="clock" class="w-4 h-4 text-purple-400"></i>
+        </div>
+        <div>
+          <div id="stat-today-time" class="text-2xl sm:text-3xl font-extrabold text-white font-mono">0m</div>
+          <span class="text-[11px] text-slate-400">Recorded today</span>
+        </div>
+      </div>
+
+      <!-- Daily Study Streak -->
+      <div class="glass-card rounded-2xl p-4 border border-white/10 flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider">Streak</span>
+          <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i>
+        </div>
+        <div>
+          <div id="stat-current-streak" class="text-2xl sm:text-3xl font-extrabold text-white font-mono">0</div>
+          <span class="text-[11px] text-slate-400">Days active</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recent Session Activity Log / Mini History -->
+    <section class="w-full max-w-xl glass-card rounded-2xl p-5 border border-white/10">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+          <i data-lucide="history" class="w-3.5 h-3.5 text-indigo-400"></i>
+          Recent Completed Sessions
+        </h2>
+        <button id="btn-clear-history" class="text-[11px] text-slate-400 hover:text-rose-400 transition-colors">
+          Clear Log
+        </button>
+      </div>
+
+      <div id="session-history-list" class="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
+        <!-- Empty state default -->
+        <div id="empty-history-notice" class="py-6 text-center text-slate-400 text-xs">
+          No completed sessions yet today. Hit <span class="text-indigo-400 font-semibold">Start Focus</span> to kick off your university study block!
+        </div>
+      </div>
+    </section>
+
+    <!-- Keyboard Shortcuts Legend -->
+    <div class="text-[11px] text-slate-400 flex items-center justify-center flex-wrap gap-x-4 gap-y-1.5 pb-2">
+      <span><kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-mono">Space</kbd> Start / Pause</span>
+      <span><kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-mono">R</kbd> Reset</span>
+      <span><kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-mono">S</kbd> Skip</span>
+      <span><kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-mono">T</kbd> Edit Objective</span>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full text-center py-4 text-xs text-slate-400 border-t border-white/5">
+    StudyPomodoro • Designed for University Students • Pure Vanilla HTML, Tailwind CSS & JS
+  </footer>
+
+  <!-- Settings Modal Drawer -->
+  <div id="settings-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
+    <div class="glass-card w-full max-w-md rounded-3xl p-6 sm:p-7 border border-white/15 shadow-2xl relative">
+      <div class="flex items-center justify-between pb-4 border-b border-white/10 mb-5">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center text-indigo-400">
+            <i data-lucide="sliders" class="w-4 h-4"></i>
+          </div>
+          <h2 class="text-base font-bold text-white">Study Timer Settings</h2>
+        </div>
+        <button id="btn-close-settings" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-sm">
+        <!-- Focus Duration -->
+        <div>
+          <div class="flex justify-between items-center mb-1.5">
+            <label for="input-focus-duration" class="font-medium text-slate-200">Focus Duration (minutes)</label>
+            <span id="val-focus-duration" class="font-mono text-indigo-400 font-semibold">25m</span>
+          </div>
+          <input type="range" id="input-focus-duration" min="5" max="90" step="5" value="25" class="w-full accent-indigo-500">
+        </div>
+
+        <!-- Short Break Duration -->
+        <div>
+          <div class="flex justify-between items-center mb-1.5">
+            <label for="input-short-duration" class="font-medium text-slate-200">Short Break (minutes)</label>
+            <span id="val-short-duration" class="font-mono text-emerald-400 font-semibold">5m</span>
+          </div>
+          <input type="range" id="input-short-duration" min="1" max="20" step="1" value="5" class="w-full accent-emerald-500">
+        </div>
+
+        <!-- Long Break Duration -->
+        <div>
+          <div class="flex justify-between items-center mb-1.5">
+            <label for="input-long-duration" class="font-medium text-slate-200">Long Break (minutes)</label>
+            <span id="val-long-duration" class="font-mono text-sky-400 font-semibold">15m</span>
+          </div>
+          <input type="range" id="input-long-duration" min="5" max="45" step="5" value="15" class="w-full accent-sky-500">
+        </div>
+
+        <!-- Daily Target Goal -->
+        <div>
+          <div class="flex justify-between items-center mb-1.5">
+            <label for="input-daily-goal" class="font-medium text-slate-200">Daily Session Target (sessions)</label>
+            <span id="val-daily-goal" class="font-mono text-amber-400 font-semibold">8</span>
+          </div>
+          <input type="range" id="input-daily-goal" min="2" max="20" step="1" value="8" class="w-full accent-amber-500">
+        </div>
+
+        <!-- Toggle Auto Start Breaks -->
+        <div class="flex items-center justify-between pt-2">
+          <div>
+            <div class="font-medium text-slate-200">Auto-Start Breaks</div>
+            <div class="text-xs text-slate-400">Automatically start countdown when session ends</div>
+          </div>
+          <input type="checkbox" id="toggle-auto-breaks" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-700 bg-slate-900">
+        </div>
+
+        <!-- Sound Alert Test & Toggle -->
+        <div class="flex items-center justify-between pt-2">
+          <div>
+            <div class="font-medium text-slate-200">Audio Chimes</div>
+            <div class="text-xs text-slate-400">Dual-tone Web Audio synthesizer</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" id="btn-test-chime" class="px-2.5 py-1 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-indigo-500/30 transition-colors">
+              Test Chime
+            </button>
+            <input type="checkbox" id="toggle-sound-settings" checked class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-700 bg-slate-900">
+          </div>
+        </div>
+
+        <!-- Danger Zone: Reset All Data -->
+        <div class="pt-4 border-t border-white/10 flex justify-between items-center">
+          <button id="btn-reset-data" type="button" class="text-xs text-rose-400 hover:text-rose-300 hover:underline">
+            Reset All Stored Stats
+          </button>
+          <button id="btn-save-settings" type="button" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-md shadow-indigo-600/30 transition-all">
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Logic -->
+  <script src="app.js" defer></script>
+</body>
+</html>

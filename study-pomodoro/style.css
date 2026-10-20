@@ -1,0 +1,155 @@
+/* StudyPomodoro Custom Styles & Animations */
+
+/* Glassmorphism Card System */
+.glass-card {
+  background: rgba(15, 23, 42, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* SVG Timer Ring Transitions and Glow */
+#timer-progress-ring {
+  transition: stroke-dashoffset 0.85s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.4s ease;
+  filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.45));
+}
+
+body.mode-short-break #timer-progress-ring {
+  filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.45));
+}
+
+body.mode-long-break #timer-progress-ring {
+  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.45));
+}
+
+/* Timer Running Pulse Effects */
+.timer-running #timer-display {
+  animation: timer-subtle-glow 2.5s infinite ease-in-out;
+}
+
+@keyframes timer-subtle-glow {
+  0%, 100% {
+    text-shadow: 0 0 20px rgba(99, 102, 241, 0.25);
+  }
+  50% {
+    text-shadow: 0 0 32px rgba(99, 102, 241, 0.55);
+  }
+}
+
+body.mode-short-break.timer-running #timer-display {
+  animation: timer-subtle-glow-emerald 2.5s infinite ease-in-out;
+}
+
+@keyframes timer-subtle-glow-emerald {
+  0%, 100% {
+    text-shadow: 0 0 20px rgba(16, 185, 129, 0.25);
+  }
+  50% {
+    text-shadow: 0 0 32px rgba(16, 185, 129, 0.55);
+  }
+}
+
+body.mode-long-break.timer-running #timer-display {
+  animation: timer-subtle-glow-cyan 2.5s infinite ease-in-out;
+}
+
+@keyframes timer-subtle-glow-cyan {
+  0%, 100% {
+    text-shadow: 0 0 20px rgba(56, 189, 248, 0.25);
+  }
+  50% {
+    text-shadow: 0 0 32px rgba(56, 189, 248, 0.55);
+  }
+}
+
+/* Custom Scrollbars */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+#session-history-list::-webkit-scrollbar {
+  width: 4px;
+}
+#session-history-list::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 4px;
+}
+#session-history-list::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.3);
+  border-radius: 4px;
+}
+#session-history-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.6);
+}
+
+/* Range Input Enhancements */
+input[type="range"] {
+  height: 6px;
+  border-radius: 4px;
+  background-color: #1e293b;
+  outline: none;
+  transition: background-color 0.2s;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.6);
+}
+
+/* Interactive Session Dot Styles */
+.cycle-dot.active {
+  background-color: #818cf8;
+  box-shadow: 0 0 8px rgba(129, 140, 248, 0.8);
+}
+
+body.mode-short-break .cycle-dot.active {
+  background-color: #34d399;
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.8);
+}
+
+body.mode-long-break .cycle-dot.active {
+  background-color: #38bdf8;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.8);
+}
+
+/* Keyframe for Active Start Pulse */
+@keyframes button-sheen {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.pulse-click {
+  animation: button-sheen 0.3s ease;
+}
+
+/* Modal Open Transitions */
+#settings-modal.active {
+  opacity: 1;
+  pointer-events: auto;
+}
